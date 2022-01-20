@@ -1,0 +1,84 @@
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AutoVerifiedAttributes: 
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+        - Name: firstname
+          AttributeDataType: String
+        - Name: lastname
+          AttributeDataType: String
+        - Name: role
+          AttributeDataType: String
+
+      UserPoolName: panic-system-user-pool
+      UsernameAttributes:
+        - email
+      UserPoolTags: ${self:custom.variables.tags}
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AccessTokenValidity: ${self:custom.variables.cognito.accessToken.value}
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: 
+        - code
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
+      CallbackURLs:
+        - http://localhost:5000
+      ClientName: panic-system-user-pool-client
+      EnableTokenRevocation: true
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      GenerateSecret: false
+      IdTokenValidity: ${self:custom.variables.cognito.idToken.value}
+      PreventUserExistenceErrors: ENABLED
+      RefreshTokenValidity: ${self:custom.variables.cognito.refreshToken.value}
+      TokenValidityUnits:
+        AccessToken: ${self:custom.variables.cognito.accessToken.unit}
+        IdToken: ${self:custom.variables.cognito.idToken.unit}
+        RefreshToken: ${self:custom.variables.cognito.refreshToken.unit}
+      UserPoolId:
+        Ref: CognitoUserPool
+
+  CognitoUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Domain: ${self:custom.variables.org}
+    UserPoolId:
+      Ref: CognitoUserPool
+    
+Outputs:
+  CognitoUserPoolId:
+    Description: The cognito user pool id
+    Value:
+      Ref: CognitoUserPool
+
+  CognitoUserPoolArn:
+    Description: The cognito user pool arn
+    Value:
+      'Fn::GetAtt':  [CognitoUserPool, Arn]
+
+  CognitoUserPoolClientId:
+    Description: The cognito user pool client id
+    Value:
+      Ref: CognitoUserPoolClient
+  
+  CognitoUserPoolDomainUrl:
+    Description: The cognito user pool domain url
+    Value: ${self:custom.variables.cognito.auth.domainName}

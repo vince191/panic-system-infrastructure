@@ -1,0 +1,29 @@
+
+rootAccountId: 220503847756
+region: eu-west-2
+org: panic-system
+
+tags:
+  org: ${self:custom.variables.org}
+  account: ${self:custom.stage}
+
+cognito:
+  auth:
+    domainName: ${self:custom.variables.org}.auth.${self:custom.variables.region}.amazoncognito.com
+  accessToken:
+    unit: hours
+    value: 3
+  idToken:
+    unit: minutes
+    value: 60
+  refreshToken:
+    unit: days
+    value: 30
+
+vpc:
+  securityGroupIds:
+    - Fn::GetAtt: [PanicSystemVpc, DefaultSecurityGroup]
+  subnetIds:
+    - Ref: VpcSubnetA
+    - Ref: VpcSubnetB
+    - Ref: VpcSubnetC

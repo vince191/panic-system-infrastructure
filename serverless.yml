@@ -1,0 +1,43 @@
+service: infrastructure
+
+frameworkVersion: '2'
+variablesResolutionMode: 20210326
+
+plugins:
+  - serverless-localstack
+
+custom:
+  stage: ${opt:stage, 'development'}
+  variables: ${file(./serverless/config/variables.${self:custom.stage}.yml)}
+  localstack:
+    stages:
+      - development
+    autostart: false
+    lambda:
+      mountCode: true
+
+provider:
+  name: aws
+  stackName: infrastructure
+  runtime: nodejs14.x
+  lambdaHashingVersion: 20201221
+  region: ${self:custom.variables.region}
+  stage: ${self:custom.stage}
+  profile: ${self:custom.variables.profile}
+  vpc: ${self:custom.variables.vpc}
+  stackTags: ${self:custom.variables.tags}
+  deploymentBucket:
+    maxPreviousDeploymentArtifacts: 3
+    tags: ${self:custom.variables.tags}
+
+resources:
+  - Resources: ${file(./serverless/resources/serverless.yml):Resources}
+  - Outputs: ${file(./serverless/resources/serverless.yml):Outputs}
+  - Resources: ${file(./serverless/resources/dynamodb.yml):Resources}
+  - Outputs: ${file(./serverless/resources/dynamodb.yml):Outputs}
+  - Resources: ${file(./serverless/resources/panic-service.yml):Resources}
+  - Outputs: ${file(./serverless/resources/panic-service.yml):Outputs}
+  - Resources: ${file(./serverless/resources/vpc.yml):Resources}
+  - Outputs: ${file(./serverless/resources/vpc.yml):Outputs}
+  - Resources: ${file(./serverless/resources/cognito.yml):Resources}
+  - Outputs: ${file(./serverless/resources/cognito.yml):Outputs}

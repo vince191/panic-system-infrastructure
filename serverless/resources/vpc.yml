@@ -1,0 +1,91 @@
+Resources:
+  # The dedicated vpc for panic-system. This also creates a default security group
+  PanicSystemVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.11.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: panic-system
+      - Key: org
+        Value: ${self:custom.variables.tags.org}
+      - Key: account
+        Value: ${self:custom.variables.tags.account}
+
+  # The first subnet attached to the panic-system vpc, in availablility zone a
+  VpcSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref PanicSystemVpc
+      CidrBlock: 10.11.0.0/20
+      AvailabilityZone: ${self:custom.variables.region}a
+      Tags:
+      - Key: Name
+        Value: panic-system-subnet-a
+      - Key: org
+        Value: ${self:custom.variables.tags.org}
+      - Key: account
+        Value: ${self:custom.variables.tags.account}
+
+  # The second subnet attached to the panic-system vpc, in availablility zone b
+  VpcSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref PanicSystemVpc
+      CidrBlock: 10.11.16.0/20
+      AvailabilityZone: ${self:custom.variables.region}b
+      Tags:
+      - Key: Name
+        Value: panic-system-subnet-b
+      - Key: org
+        Value: ${self:custom.variables.tags.org}
+      - Key: account
+        Value: ${self:custom.variables.tags.account}
+
+  # The third subnet attached to the panic-system vpc, in availablility zone c
+  VpcSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref PanicSystemVpc
+      CidrBlock: 10.11.32.0/20
+      AvailabilityZone: ${self:custom.variables.region}c
+      Tags:
+      - Key: Name
+        Value: panic-system-subnet-c
+      - Key: org
+        Value: ${self:custom.variables.tags.org}
+      - Key: account
+        Value: ${self:custom.variables.tags.account}
+
+Outputs:
+  VpcId:
+    Export:
+      Name: Vpc:Id
+    Value: !Ref PanicSystemVpc
+    Description: The vpc dedicated to panic-system
+
+  VpcSecurityGroupId:
+    Export:
+      Name: Vpc-SecurityGroup:Id
+    Value: !GetAtt PanicSystemVpc.DefaultSecurityGroup
+    Description: The id of panic-system VPC's dedicated security group
+
+  VpcSubnetAId:
+    Export:
+      Name: Vpc-SubnetA:Id
+    Value: !Ref VpcSubnetA
+    Description: The id of panic-system VPC's subnet in availablity zone A
+
+  VpcSubnetBId:
+    Export:
+      Name: Vpc-SubnetB:Id
+    Value: !Ref VpcSubnetB
+    Description: The id of panic-system VPC's subnet in availablity zone B
+
+  VpcSubnetCId:
+    Export:
+      Name: Vpc-SubnetC:Id
+    Value: !Ref VpcSubnetC
+    Description: The id of panic-system VPC's subnet in availablity zone C

@@ -1,0 +1,181 @@
+Resources:
+  # Dedicated bucket for all serverless deployments (except this infrastructure serverless project)
+  SlsDeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: panic-system-sls-deployments
+      Tags:
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
+
+  # Dedicated role for deploying serverless application
+  ServelessDeployerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: serverless-deployer-role
+      Description: The role to be assumed by users and cf/ci to deploy a serverless stack
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: Allow
+            Principal: 
+              Service:
+                - cloudformation.amazonaws.com
+              AWS:
+                - arn:aws:iam::${self:custom.variables.rootAccountId}:root
+            Action: 
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: serverless-deployer-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action: 
+                  - cloudformation:DescribeStacks
+                  - cloudformation:ValidateTemplate
+                Resource:
+                  - arn:aws:cloudformation:${self:custom.variables.region}:${self:custom.variables.accountId}:*
+              - Effect: Allow
+                Action: 
+                  - cloudformation:Describe*
+                  - cloudformation:List*
+                  - cloudformation:Get*
+                  - cloudformation:PreviewStackUpdate
+                  - cloudformation:CreateStack
+                  - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack
+                Resource:
+                  - arn:aws:cloudformation:${self:custom.variables.region}:${self:custom.variables.accountId}:stack/*
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeVpcs
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DescribeInstances
+                  - ec2:AttachNetworkInterface
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action: 
+                  - s3:*
+                Resource:
+                  - !GetAtt SlsDeploymentBucket.Arn
+                  - !Sub
+                    - '${arn}/*'
+                    - { arn: !GetAtt SlsDeploymentBucket.Arn }
+              - Effect: Allow
+                Action:
+                  - sns:Subscribe
+                  - sns:Unsubscribe
+                Resource:
+                  - arn:aws:sns:${self:custom.variables.region}:${self:custom.variables.accountId}:*
+              - Effect: Allow
+                Action:
+                  - apigateway:GET
+                  - apigateway:HEAD
+                  - apigateway:OPTIONS
+                  - apigateway:PATCH
+                  - apigateway:POST
+                  - apigateway:PUT
+                  - apigateway:DELETE
+                Resource:
+                  - arn:aws:apigateway:${self:custom.variables.region}::/restapis
+                  - arn:aws:apigateway:${self:custom.variables.region}::/restapis/*
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                Resource:
+                  - arn:aws:logs:${self:custom.variables.region}:${self:custom.variables.accountId}:log-group::log-stream:*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DeleteLogGroup
+                  - logs:DeleteLogStream
+                  - logs:DescribeLogStreams
+                  - logs:FilterLogEvents
+                  - logs:PutRetentionPolicy
+                Resource:
+                  - arn:aws:logs:${self:custom.variables.region}:${self:custom.variables.accountId}:log-group:/aws/lambda/*
+              - Effect: Allow
+                Action:
+                  - events:DescribeRule
+                  - events:PutRule
+                  - events:PutTargets
+                  - events:RemoveTargets
+                  - events:DeleteRule
+                Resource:
+                  - arn:aws:events:${self:custom.variables.region}:${self:custom.variables.accountId}:rule/*
+              - Effect: Allow
+                Action:
+                  - lambda:CreateFunction
+                  - lambda:GetFunction
+                  - lambda:GetFunctionConfiguration
+                  - lambda:DeleteFunction
+                  - lambda:UpdateFunctionConfiguration
+                  - lambda:UpdateFunctionCode
+                  - lambda:ListVersionsByFunction
+                  - lambda:PublishVersion
+                  - lambda:ListAliases
+                  - lambda:CreateAlias
+                  - lambda:DeleteAlias
+                  - lambda:UpdateAlias
+                  - lambda:AddPermission
+                  - lambda:RemovePermission
+                  - lambda:InvokeFunction
+                Resource:
+                  - arn:aws:lambda:${self:custom.variables.region}:${self:custom.variables.accountId}:function:*
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - lambda:CreateEventSourceMapping
+                  - lambda:UpdateEventSourceMapping
+                  - lambda:DeleteEventSourceMapping
+                Resource:
+                  - '*'
+              - Effect: Allow
+                Action:
+                  - lambda:GetEventSourceMapping
+                Resource:
+                  - arn:aws:lambda:${self:custom.variables.region}:${self:custom.variables.accountId}:event-source-mapping:*
+      Tags:
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
+
+Outputs:
+  SlsDeploymentBucketName:
+    Export:
+      Name: ServerlessDeploymentBucket:Name
+    Value: !Ref SlsDeploymentBucket
+    Description: The id of the s3 bucket towhich a serverless deployment should be published to for cloudformation to build from
+
+  SlsDeploymentBucketArn:
+    Export:
+      Name: ServerlessDeploymentBucket:Arn
+    Value: !GetAtt SlsDeploymentBucket.Arn
+    Description: The arn of the s3 bucket towhich a serverless deployment should be published to for cloudformation to build from
+
+  ServelessDeployerRoleName:
+    Export:
+      Name: ServelessDeployerRole:Name
+    Value: !Ref ServelessDeployerRole
+    Description: The name of the role to be assumed by users and ci to deploy a serverless stack
+  
+  ServelessDeployerRoleArn:
+    Export:
+      Name: ServelessDeployerRole:Arn
+    Value: !GetAtt ServelessDeployerRole.Arn
+    Description: The arn of the role to be assumed by users and cf/ci to deploy a serverless stack

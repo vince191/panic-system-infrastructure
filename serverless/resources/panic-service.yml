@@ -1,0 +1,61 @@
+Resources:
+  # Dedicated role for the panic-service to assume
+  PanicServiceLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: panic-service-lambda-role
+      Description: The role to be assumed by the identity service when executing lambdas
+      AssumeRolePolicyDocument: 
+        Version: '2012-10-17'
+        Statement: 
+          - Effect: Allow
+            Principal: 
+              Service:
+                - lambda.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: panic-service-lambda-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - arn:aws:lambda:${self:custom.variables.region}:${self:custom.variables.accountId}:function:panic-service-*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource:
+                  - arn:aws:logs:${self:custom.variables.region}:${self:custom.variables.accountId}:log-group:/aws/lambda/panic-service-*:*
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeVpcs
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource:
+                  - '*'
+      Tags:
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
+
+Outputs:
+  PanicServiceLambdaRoleName:
+    Export:
+      Name: PanicServiceLambdaRole:Name
+    Value: !Ref PanicServiceLambdaRole
+    Description: The name of the role to be assumed by the identity service when executing lambdas
+
+  PanicServiceLambdaRoleArn:
+    Export:
+      Name: PanicServiceLambdaRole:Arn
+    Value: !GetAtt PanicServiceLambdaRole.Arn
+    Description: The arn of the role to be assumed by the identity service when executing lambdas
