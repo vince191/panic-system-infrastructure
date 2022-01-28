@@ -41,6 +41,17 @@ Resources:
                   - ec2:DeleteNetworkInterface
                 Resource:
                   - '*'
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt PanicRequestsTable.Arn
       Tags:
         - Key: org
           Value: ${self:custom.variables.tags.org}
@@ -50,12 +61,12 @@ Resources:
 Outputs:
   PanicServiceLambdaRoleName:
     Export:
-      Name: PanicServiceLambdaRole:Name
+      Name: PanicServiceLambdaRole-Name
     Value: !Ref PanicServiceLambdaRole
     Description: The name of the role to be assumed by the identity service when executing lambdas
 
   PanicServiceLambdaRoleArn:
     Export:
-      Name: PanicServiceLambdaRole:Arn
+      Name: PanicServiceLambdaRole-Arn
     Value: !GetAtt PanicServiceLambdaRole.Arn
     Description: The arn of the role to be assumed by the identity service when executing lambdas

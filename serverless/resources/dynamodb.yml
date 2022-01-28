@@ -1,26 +1,28 @@
 Resources:
-  PanicSubmitsTable:
+  PanicRequestsTable:
     Type: AWS::DynamoDB::Table
     Properties: 
       AttributeDefinitions: 
         - AttributeName: id
           AttributeType: S
-        - AttributeName: submitDate
+        - AttributeName: dateCreated
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema: 
         - AttributeName : id
           KeyType : HASH
-        - AttributeName : submitDate
+        - AttributeName : dateCreated
           KeyType : RANGE
-      TableClass: STANDARD
-      TableName: PanicSubmits
-
+      TableName: PanicRequests
 
 Outputs:
-  PanicSubmitsTableName:
-    Description: The table name of panic submits in dynamodb
-    Value: !Ref PanicSubmitsTable
-  PanicSubmitsTableArn:
-    Description: The table name of panic submits in dynamodb
-    Value: !GetAtt PanicSubmitsTable.Arn
+  PanicRequestsTableName:
+    Export:
+      Name: PanicRequestsTable-Name
+    Description: The table name of panic requests in dynamodb
+    Value: !Ref PanicRequestsTable
+  PanicRequestsTableArn:
+    Export:
+      Name: PanicRequestsTable-Arn
+    Description: The table name of panic requests in dynamodb
+    Value: !GetAtt PanicRequestsTable.Arn

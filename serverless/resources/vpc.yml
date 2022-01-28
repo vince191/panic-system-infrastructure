@@ -7,12 +7,23 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
-      - Key: Name
-        Value: panic-system
-      - Key: org
-        Value: ${self:custom.variables.tags.org}
-      - Key: account
-        Value: ${self:custom.variables.tags.account}
+        - Key: Name
+          Value: panic-system-vpc
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
+
+  # Route table for the vpc
+  VpcRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      Tags: 
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
+      VpcId: !Ref PanicSystemVpc
 
   # The first subnet attached to the panic-system vpc, in availablility zone a
   VpcSubnetA:
@@ -22,12 +33,12 @@ Resources:
       CidrBlock: 10.11.0.0/20
       AvailabilityZone: ${self:custom.variables.region}a
       Tags:
-      - Key: Name
-        Value: panic-system-subnet-a
-      - Key: org
-        Value: ${self:custom.variables.tags.org}
-      - Key: account
-        Value: ${self:custom.variables.tags.account}
+        - Key: Name
+          Value: panic-system-subnet-a
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
 
   # The second subnet attached to the panic-system vpc, in availablility zone b
   VpcSubnetB:
@@ -37,12 +48,12 @@ Resources:
       CidrBlock: 10.11.16.0/20
       AvailabilityZone: ${self:custom.variables.region}b
       Tags:
-      - Key: Name
-        Value: panic-system-subnet-b
-      - Key: org
-        Value: ${self:custom.variables.tags.org}
-      - Key: account
-        Value: ${self:custom.variables.tags.account}
+        - Key: Name
+          Value: panic-system-subnet-b
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
 
   # The third subnet attached to the panic-system vpc, in availablility zone c
   VpcSubnetC:
@@ -52,12 +63,22 @@ Resources:
       CidrBlock: 10.11.32.0/20
       AvailabilityZone: ${self:custom.variables.region}c
       Tags:
-      - Key: Name
-        Value: panic-system-subnet-c
-      - Key: org
-        Value: ${self:custom.variables.tags.org}
-      - Key: account
-        Value: ${self:custom.variables.tags.account}
+        - Key: Name
+          Value: panic-system-subnet-c
+        - Key: org
+          Value: ${self:custom.variables.tags.org}
+        - Key: account
+          Value: ${self:custom.variables.tags.account}
+
+  # The endpoint for the vpc to connect to aws service dynamodb
+  VpcDynamoEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties: 
+      RouteTableIds: 
+        - !GetAtt VpcRouteTable.RouteTableId
+      ServiceName: com.amazonaws.${self:custom.variables.region}.dynamodb
+      VpcEndpointType: Gateway
+      VpcId: !Ref PanicSystemVpc
 
 Outputs:
   VpcId:
@@ -68,24 +89,30 @@ Outputs:
 
   VpcSecurityGroupId:
     Export:
-      Name: Vpc-SecurityGroup:Id
+      Name: Vpc-SecurityGroup-Id
     Value: !GetAtt PanicSystemVpc.DefaultSecurityGroup
     Description: The id of panic-system VPC's dedicated security group
 
   VpcSubnetAId:
     Export:
-      Name: Vpc-SubnetA:Id
+      Name: Vpc-SubnetA-Id
     Value: !Ref VpcSubnetA
     Description: The id of panic-system VPC's subnet in availablity zone A
 
   VpcSubnetBId:
     Export:
-      Name: Vpc-SubnetB:Id
+      Name: Vpc-SubnetB-Id
     Value: !Ref VpcSubnetB
     Description: The id of panic-system VPC's subnet in availablity zone B
 
   VpcSubnetCId:
     Export:
-      Name: Vpc-SubnetC:Id
+      Name: Vpc-SubnetC-Id
     Value: !Ref VpcSubnetC
     Description: The id of panic-system VPC's subnet in availablity zone C
+
+  VpcRouteTableId:
+    Export:
+      Name: Vpc-RouteTable-Id
+    Value: !GetAtt VpcRouteTable.RouteTableId
+    Description: The id of the route table of the attached vpc

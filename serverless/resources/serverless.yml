@@ -14,7 +14,7 @@ Resources:
   ServelessDeployerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: serverless-deployer-role
+      RoleName: panic-system-serverless-deployer-role
       Description: The role to be assumed by users and cf/ci to deploy a serverless stack
       AssumeRolePolicyDocument: 
         Version: "2012-10-17"
@@ -24,7 +24,7 @@ Resources:
               Service:
                 - cloudformation.amazonaws.com
               AWS:
-                - arn:aws:iam::${self:custom.variables.rootAccountId}:root
+                - arn:aws:iam::${self:custom.variables.accountId}:root
             Action: 
               - sts:AssumeRole
       Policies:

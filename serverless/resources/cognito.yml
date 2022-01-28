@@ -20,7 +20,6 @@ Resources:
           AttributeDataType: String
         - Name: role
           AttributeDataType: String
-
       UserPoolName: panic-system-user-pool
       UsernameAttributes:
         - email
@@ -54,31 +53,34 @@ Resources:
         AccessToken: ${self:custom.variables.cognito.accessToken.unit}
         IdToken: ${self:custom.variables.cognito.idToken.unit}
         RefreshToken: ${self:custom.variables.cognito.refreshToken.unit}
-      UserPoolId:
-        Ref: CognitoUserPool
+      UserPoolId: !Ref CognitoUserPool
 
   CognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
     Domain: ${self:custom.variables.org}
-    UserPoolId:
-      Ref: CognitoUserPool
+    UserPoolId: !Ref CognitoUserPool
     
 Outputs:
   CognitoUserPoolId:
+    Export:
+      Name: CognitoUserPool-Id
     Description: The cognito user pool id
-    Value:
-      Ref: CognitoUserPool
+    Value: !Ref CognitoUserPool
 
   CognitoUserPoolArn:
+    Export:
+      Name: CognitoUserPool-Arn
     Description: The cognito user pool arn
-    Value:
-      'Fn::GetAtt':  [CognitoUserPool, Arn]
+    Value: !GetAtt CognitoUserPool.Arn
 
   CognitoUserPoolClientId:
+    Export:
+      Name: CognitoUserPoolClient-Id
     Description: The cognito user pool client id
-    Value:
-      Ref: CognitoUserPoolClient
+    Value: !Ref CognitoUserPoolClient
   
   CognitoUserPoolDomainUrl:
+    Export:
+      Name: CognitoUserPoolDomain-Url
     Description: The cognito user pool domain url
     Value: ${self:custom.variables.cognito.auth.domainName}
