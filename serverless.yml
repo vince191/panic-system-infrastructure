@@ -30,5 +30,5 @@ resources:
   - Outputs: ${file(./serverless/resources/panic-service.yml):Outputs}
   - Resources: ${file(./serverless/resources/vpc.yml):Resources}
   - Outputs: ${file(./serverless/resources/vpc.yml):Outputs}
-  # - Resources: ${file(./serverless/resources/cognito.yml):Resources}
-  # - Outputs: ${file(./serverless/resources/cognito.yml):Outputs}
+  - Resources: ${file(./serverless/resources/cognito.yml):Resources}
+  - Outputs: ${file(./serverless/resources/cognito.yml):Outputs}

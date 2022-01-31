@@ -57,8 +57,9 @@ Resources:
 
   CognitoUserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
-    Domain: ${self:custom.variables.org}
-    UserPoolId: !Ref CognitoUserPool
+    Properties:
+      Domain: ${self:custom.variables.org}
+      UserPoolId: !Ref CognitoUserPool
     
 Outputs:
   CognitoUserPoolId:
